@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>javascriptペイント β</title>
+
+		<meta content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" name="viewport" /> 
+		<style type="text/css">
+			
+			body {
+				
+				margin: 0;
+				background-color: rgb(200,200,255);
+			}
+			
+			div.canvasdiv{
+				position: absolute;
+				top: 52px;
+				left: 10px;
+				width: 2024px;
+			}
+			
+			canvas {
+				cursor: crosshair;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				background-color: rgb(255,255,255,0.0);
+			}
+			#backcanvas{
+				background-color: rgb(255,255,255);
+			}
+			
+			#pencursor{
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 10px;
+				height: 10px;
+				
+				border: 1px solid #000000;
+				border-radius: 50%;
+				border-color: rgb(0,0,0);
+				
+			}
+			
+			div.subfloor{
+				position: absolute; 
+				top: 52px;
+				left: 0px;
+				width: 320px;
+				height: 346px;
+				background-color: rgba(150,150,150,0.75);
+				
+				border: 1px solid #000000;
+				border-radius: 7%;
+			}
+			
+			div.back_buttons{
+				display: inline-flex;
+			}
+			
+			div.peu_buttons{
+				display: inline-flex;
+			}
+			
+			#slider_r{
+				margin: 5 auto;
+				width: 240px;
+			}
+			
+			#slider_h{
+				margin: 5 auto;
+				width: 240px;
+			}
+			
+			div.centerbar{
+				cursor: default;
+				margin: 0 auto;
+				text-align: center;
+			}
+			
+			div.barandnum{
+				display: inline-flex;
+				margin: 0 auto;
+				text-align: center;
+			}
+			
+			div.barandnumex{
+				margin: 0 auto;
+				text-align: center;
+			}
+			
+			div.colorh_box{
+				background-color: rgb(0,0,0);
+				width: 16px;
+				height:16px;
+			}
+			
+			
+			
+			div.colorsv_box{
+				margin: 0 auto;
+				background: linear-gradient(to bottom, rgba(255,255,255,0.0), rgba(0,0,0,1.0))
+							,linear-gradient(to left, rgb(255,0,0), rgb(255,255,255));
+				width: 160px;
+				height:160px;
+			}
+			div.colorsv_pointarea{
+				position: relative;
+				top: -6px;
+				left:-6px;
+				width: 172px;
+				height:172px;
+			}
+			
+			img.colorsv_point{
+				position: relative;
+				top: 00px;
+				left: 00px;
+				width: 12px;
+				height: 12px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div id ="libdiv">
+			<!--<object type="application/x-wacomtabletplugin"></object>
+			-->
+			<link type="text/css" rel="stylesheet" href="jquery-ui.min.css"/>
+			<script type="text/javascript" src="jquery-1.12.0.js"></script>		
+			<script type="text/javascript" src="jquery-ui.min.js"></script>	
+			<script type="text/javascript" src="b64utils.js"></script>
+			<script type="text/javascript" src="eimiaction.js"></script>
+			<script type="text/javascript" src="main.js"></script>
+		</div>
+		
+		<?php
+    		include("get_file.php");//　PHPファイル読み込み
+		?>
+		<div class="back_buttons">
+			<form method="post" action="download.php">
+			<!--<input type="submit" class="dlbutton" onclick="dlcanvas_preparation()" value="DL">
+			-->
+				<input type="image" class="dlbutton" 
+					src="picture/dlbutton.png" 	onclick="dlcanvas_preparation();" width="52px" height="52px">
+				<input type="hidden" class="DLpngpost" name="DLpng" value="" />
+			</form>
+			<input type="image" src="picture/export.png" 	onclick="upload2();" width="52px" height="52px">
+			<div>※画像のDLと画像のアップロードボタン</div>
+		</div>
+		<div class="canvasdiv">
+			<canvas id = "backcanvas"></canvas>
+			<canvas id = "maincanvas"></canvas>
+			<div id = "pencursor"></div>
+			<div id = "canvascover" style="position: absolute; cursor: crosshair;"></div>
+			
+			<div style="position: absolute; top:640px;">
+				<div>簡易更新履歴</div>	
+				<div>4/19 カーソル周りを十字架にした．ペンサイズに応じた円を表示．</div>
+				<div>4/20 サブフロアをクリックでカーソルが移動する様にした ．back redrawボタン追加．</div>
+				<div>5/25 画像DLボタンの追加．アップロード時に画面遷移が発生しないように変更．</div>
+			</div>
+		</div>
+		
+		
+		<div class="subfloor">
+			<div class="centerbar">
+				<img class="centerbar" src="picture/bar.png" width="128" height="16">
+			</div>
+			<div class="peu_buttons">
+				<input type="image" src="picture/pen.png"		onclick="dc_pen();" width="52" height="52">
+				<input type="image" src="picture/eraser.png" 	onclick="dc_eraser();" width="52" height="52">
+				<input type="image" src="picture/back.png" 		onclick="data.passback();data.redraw(maincontext);" width="52" height="52">
+				<input type="image" src="picture/redraw.png" 	onclick="data.repass();data.redraw(maincontext);" width="52" height="52">	
+			</div>
+			<div>ペンサイズ</div>
+			<div class="barandnum">
+				<div id="slider_r"></div>
+				<div class="slider_r_px">px</div>
+			</div>
+			<div>色相環H</div>
+			<div class="barandnum">
+				<div id="slider_h"></div>
+				<div class="colorh_box"></div>
+			</div>
+			
+			<div>彩度明度</div>
+			<div class="barandnumex">
+				<div class="colorsv_box">
+					<div class="colorsv_pointarea">
+						<img class="colorsv_point" src="picture/point.png">
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+		
+		
+		
+	</body>
+</html>
