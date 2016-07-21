@@ -8,11 +8,16 @@ var eimi,rootinid,eimi_flag= false;
 
 var canvas_w = 2048,canvas_h = 640;
 var subfloorsize = 160;
-
+const basezoom = 100;
 //スタイルシートの座標文字列から数値だけ取りだし　数値として返す
 var number_check = /[^-^0-9^\.]/g;
 function check_stringnum(st){
 	var exst = st.split("px");
+	return Number(exst[0]);
+}
+
+function check_stringnumP(st){
+	var exst = st.split("%");
 	return Number(exst[0]);
 }
 
@@ -36,8 +41,10 @@ function DocumentGetScrollPosition(document_obj){
 var subx=-1,suby=-1;//サブウィンドウの位置を記録する
 
 var t_plugin;//wacomタブレットプラグイン
-
+const maxtouch = 3;
 var data,csx=-1,csy=-1;
+var multitouches_now=0;//今のタッチ数(マルチタッチ処理用)
+var multitouchXY=[[0,0],[0,0],[0,0]];//マルチタッチ座標取得用
 
 //製作データまとめ
 function one_canvasdata(){
@@ -69,7 +76,7 @@ one_canvasdata.prototype.passback = function(){
 	}
 	//console.log("pnum:"+this.passnum+" :action_id:"+this.action_id);
 	
-}
+};
 
 //操作を一つやり直す
 //（次の操作番号(action_id)が現在と同じである場合のみ）
@@ -87,7 +94,7 @@ one_canvasdata.prototype.repass = function(){
 	}
 	//console.log("pnum:"+this.passnum+" :action_id:"+this.action_id);
 	
-}
+};
 
 //再描画
 one_canvasdata.prototype.redraw = function(context, backcon){
@@ -101,7 +108,7 @@ one_canvasdata.prototype.redraw = function(context, backcon){
 	}
 	
 	
-}
+};
 
 //モード切り替え
 one_canvasdata.prototype.modechange = function(mode){
@@ -115,14 +122,14 @@ one_canvasdata.prototype.modechange = function(mode){
 		this.mode = mode;
 		this.pass_color = "rgba(255,255,255,1.0)";
 	}
-}
+};
 
 //hsv情報をｒｇｂデータにして設定を更新する
 one_canvasdata.prototype.setpasscolor = function(){
 	rgb = hsv_to_rgb(this.hsv[0],this.hsv[1],this.hsv[2]);
 	this.pass_color = "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+",1.0)";
 	
-}
+};
 
 //色設定
 function hsv_to_rgb(h,s,v){//h,s,v(0~1)
@@ -173,10 +180,24 @@ function preparation(){
 		
 	}
 	//ボタンが押された
-	function onMouseDown(e){
+	function onMouseDown(event){
+		var e,i;
+		//touchmoveの場合は，マルチタッチを考慮する必要がある．
+		if(event.type == "touchmove"){
+			if(event.changedTouches.length<=1)
+				e = event.changedTouches[0];
+			else{
+				multitouches_now = event.touches.length;
+				for(i=0;i<event.changedTouches.length && i<maxtouch ;i++){
+					multitouchXY[i] = [event.changedTouches[i].clientX, event.changedTouches[i].clientY];
+				}
+				return;
+			}
+		}else e = event;
+		var extention = 1;//(Number(check_stringnumP(document.body.style.zoom))/100.0;
 		var rect = e.target.getBoundingClientRect();
-		csx = e.clientX - rect.left;
-		csy = e.clientY - rect.top;
+		csx = e.clientX*extention - rect.left;
+		csy = e.clientY*extention - rect.top;
 		
 		//console.log("start :x:"+csx+" :y:"+csy);
 		
@@ -185,11 +206,57 @@ function preparation(){
 		data.passnum++;
 		draw(maincontext,pass);
 	}
+	
+	
 	//カーソルが移動した
-	function onMouseMove(e){
+	function onMouseMove(event){
+		var e,i;
+		//touchmoveの場合は，マルチタッチを考慮する必要がある．
+		if(event.type == "touchmove"){
+			$('div.testtext').text(event.touches.length + "::");
+			if(event.touches.length<=1)
+			{
+				multitouches_now = event.touches.length;
+				e = event.touches[0];
+				$('div.testtext').text("シングルタッチ");
+			}	
+				
+			else{
+				//マルチタッチ数が変化した時に値の初期化を行う．
+				if(multitouches_now != event.touches.length){
+					for(i=0;i<event.touches.length && i<maxtouch ;i++){
+						multitouchXY[i] = [event.touches[i].clientX, event.touches[i].clientY];
+					}
+					multitouches_now = event.touches.length;
+				}
+				//$('div.testtext').text("マルチタッチ");
+				var cx,cy;//変化量
+				var sxy = DocumentGetScrollPosition(document);
+				cx = event.touches[0].clientX - multitouchXY[0][0];
+				cy = event.touches[0].clientY - multitouchXY[0][1];
+				//alert(cx,cy);
+				//$('div.testtext').text(event.touches.length + "::"+cx+".."+cy);
+				for(i=0;i<event.touches.length && i<maxtouch ;i++){
+					multitouchXY[i] = [event.touches[i].clientX, event.touches[i].clientY];
+				}
+				window.scroll(sxy['x'] - cx,sxy['y'] - cy);
+				return;
+			}
+			
+				
+		}else {
+			
+			$('div.testtext').text("シングルタッチモードです");
+			e = event;
+		}
+		var extention = 1;//Number(check_stringnumP(document.body.style.zoom))/100.0;
+		
 		var rect = e.target.getBoundingClientRect();
-		var ex = e.clientX - rect.left;
-		var ey = e.clientY - rect.top;
+		var ex = e.clientX*extention - rect.left;
+		var ey = e.clientY*extention - rect.top;
+		
+
+		
 		cursorpensize([ex,ey]);
 		
 		if(csx!=-1 && csy!=-1){
@@ -249,7 +316,7 @@ function preparation(){
 		t_plugin = document.querySelector('object[type="application/x-wacomtabletplugin"]');
 		
 		
-		
+		document.body.style.zoom = basezoom + "%";
 		
 		maincanvas = $("#maincanvas")[0];
 		maincontext = maincanvas.getContext('2d');
@@ -270,7 +337,21 @@ function preparation(){
 		maincanvas_cover.addEventListener('mouseup', onMouseUp, false);
 		maincanvas_cover.addEventListener('mousemove',onMouseMove, false);
 		//モバイル向け
-		maincanvas_cover.addEventListener('touchmove',onMouseMove, false);
+		maincanvas_cover.addEventListener('touchstart',function(e){
+				e.preventDefault();
+				console.log("f_start");
+				onMouseDown(e);
+			}, false);
+		maincanvas_cover.addEventListener('touchmove',function(e){
+				e.preventDefault();
+				console.log("f_move");
+				onMouseMove(e);
+			}, false);
+		maincanvas_cover.addEventListener('touchend',function(e){
+				e.preventDefault();
+				console.log("f_end");
+				onMouseUp(e);
+			}, false);
 		
 		$("div.colorsv_pointarea")[0].addEventListener('click',subclick, false);
 		

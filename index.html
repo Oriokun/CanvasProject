@@ -8,7 +8,7 @@
 		<style type="text/css">
 			
 			body {
-				
+				zoom: 150%;
 				margin: 0;
 				background-color: rgb(200,200,255);
 			}
@@ -54,6 +54,30 @@
 				
 				border: 1px solid #000000;
 				border-radius: 7%;
+			}
+			
+			
+			.peu_buttons{
+				position: relative;
+				left: 50%;
+				transform: translateX(-50%);
+			}
+			
+			.buttonradius{
+				width: 52px;
+				height:52px;
+				border: 1px solid #000000;
+				border-radius: 50%;
+			}
+			
+			.mybutton{
+				position:relative;
+				left: 50%;
+				top: 50%;
+				transform: translateX(-50%) translateY(-50%);
+				width: 40px;
+				height:40px;
+				
 			}
 			
 			div.back_buttons{
@@ -105,6 +129,7 @@
 							,linear-gradient(to left, rgb(255,0,0), rgb(255,255,255));
 				width: 160px;
 				height:160px;
+				border: 1px solid #000000;
 			}
 			div.colorsv_pointarea{
 				position: relative;
@@ -143,12 +168,18 @@
 			<form method="post" action="download.php">
 			<!--<input type="submit" class="dlbutton" onclick="dlcanvas_preparation()" value="DL">
 			-->
-				<input type="image" class="dlbutton" 
-					src="picture/dlbutton.png" 	onclick="dlcanvas_preparation();" width="52px" height="52px">
+				<div class="buttonradius">
+					<input type="image" class="dlbutton mybutton" 
+						src="picture/download.svg" 	onclick="dlcanvas_preparation();">
+				</div>
+				
 				<input type="hidden" class="DLpngpost" name="DLpng" value="" />
 			</form>
-			<input type="image" src="picture/export.png" 	onclick="upload2();" width="52px" height="52px">
+			<div class="buttonradius">
+				<input class="mybutton"  type="image" src="picture/upload.svg" 	onclick="upload2();">
+			</div>
 			<div>※画像のDLと画像のアップロードボタン</div>
+			
 		</div>
 		<div class="canvasdiv">
 			<canvas id = "backcanvas"></canvas>
@@ -161,6 +192,7 @@
 				<div>4/19 カーソル周りを十字架にした．ペンサイズに応じた円を表示．</div>
 				<div>4/20 サブフロアをクリックでカーソルが移動する様にした ．back redrawボタン追加．</div>
 				<div>5/25 画像DLボタンの追加．アップロード時に画面遷移が発生しないように変更．</div>
+				<div>7/21スマートフォンでのドロー機能の追加．</div>
 			</div>
 		</div>
 		
@@ -170,10 +202,18 @@
 				<img class="centerbar" src="picture/bar.png" width="128" height="16">
 			</div>
 			<div class="peu_buttons">
-				<input type="image" src="picture/pen.png"		onclick="dc_pen();" width="52" height="52">
-				<input type="image" src="picture/eraser.png" 	onclick="dc_eraser();" width="52" height="52">
-				<input type="image" src="picture/back.png" 		onclick="data.passback();data.redraw(maincontext);" width="52" height="52">
-				<input type="image" src="picture/redraw.png" 	onclick="data.repass();data.redraw(maincontext);" width="52" height="52">	
+				<div class="buttonradius">
+					<input class="mybutton" type="image" src="picture/pencil.svg"		onclick="dc_pen();">	
+				</div>
+				<div class="buttonradius">
+					<input class="mybutton"  type="image" src="picture/eraser.png" 	onclick="dc_eraser();" >
+				</div>
+				<div class="buttonradius">
+					<input class="mybutton"  type="image" src="picture/redo.svg" 		onclick="data.passback();data.redraw(maincontext);">
+				</div>
+				<div class="buttonradius">
+					<input class="mybutton"  type="image" src="picture/undo-arrow.svg" 	onclick="data.repass();data.redraw(maincontext);">	
+				</div>
 			</div>
 			<div>ペンサイズ</div>
 			<div class="barandnum">
