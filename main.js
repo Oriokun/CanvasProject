@@ -8,7 +8,6 @@ var eimi,rootinid,eimi_flag= false;
 
 var canvas_w = 2048,canvas_h = 640;
 var subfloorsize = 160;
-const basezoom = 100;
 //スタイルシートの座標文字列から数値だけ取りだし　数値として返す
 var number_check = /[^-^0-9^\.]/g;
 function check_stringnum(st){
@@ -291,6 +290,50 @@ function preparation(){
 		
 	}
 	
+	function centerbardragevent(event){
+		var cx=0,cy=0;
+		if(event.type == "touchstart" || event.type == "touchmove"){
+			if(event.touches.length<=1)
+			{
+			
+				cy = event.touches[0].clientY;
+				cx = event.touches[0].clientX;
+				
+			}
+		}else{
+			cx = event.clientX;cy = event.clientY;
+		}
+		
+		if(event.type == "touchstart" || event.type == "dragstart"){
+			var scrollxy = DocumentGetScrollPosition(document);
+			//console.log(t.style);
+			suby = cy + scrollxy['y'];
+			subx = cx + scrollxy['x'];	
+		}else
+		if(event.type == "touchmove" || event.type == "drag"){
+			if(suby!=-1 && subx!=-1){
+			
+				var t = event.target.parentNode.parentNode;
+				var scrollxy = DocumentGetScrollPosition(document);
+				//console.log('drag'+(t.style.top)+'::'+(t.style.left));
+				//console.log((event.clientX+ scrollxy['x']) +"::"+ (event.clientY+scrollxy['y']));
+				if(cx==0 && cy==0)return;
+				var top = (cy + scrollxy['y'] - suby + check_stringnum(t.style.top)),
+				left = (cx + scrollxy['x'] - subx + check_stringnum(t.style.left));
+				t.style.top = top +'px';
+				t.style.left = left +'px';
+		
+				suby = cy + scrollxy['y'];
+				subx = cx + scrollxy['x'];
+			}
+						
+		}else
+		if(event.type == "touchend" || event.type == "dragend"){
+			suby = -1; subx = -1;
+		}
+		
+	}
+	
 	
 	function onMouseUp(e){
 		csx = -1;
@@ -316,7 +359,6 @@ function preparation(){
 		t_plugin = document.querySelector('object[type="application/x-wacomtabletplugin"]');
 		
 		
-		document.body.style.zoom = basezoom + "%";
 		
 		maincanvas = $("#maincanvas")[0];
 		maincontext = maincanvas.getContext('2d');
@@ -328,7 +370,7 @@ function preparation(){
 		
 		load();
 		
-		console.log(maincanvas);
+		//console.log(maincanvas);
 		//キャンバスイベント
 		var maincanvas_cover = $("#canvascover")[0];
 		maincanvas_cover.style.width = maincanvas.width + 'px';
@@ -355,7 +397,7 @@ function preparation(){
 		
 		$("div.colorsv_pointarea")[0].addEventListener('click',subclick, false);
 		
-		$('img.colorsv_point')[0].addEventListener('click',function(){console.log("ポインタくりっく");}, false);
+		//$('img.colorsv_point')[0].addEventListener('click',function(){console.log("ポインタくりっく");}, false);
 		/*
 		maincanvas.addEventListener('mousedown',onMouseDown, false);
 		maincanvas.addEventListener('mouseup', onMouseUp, false);
@@ -366,8 +408,9 @@ function preparation(){
 		
 		//自作ツールボックスのイベント設定
 		toolbox = $('div.subfloor')[0];
-		console.log($('input.centerbar'));
+		//console.log($('input.centerbar'));
 		
+		/*ドラッグイベントによるサブウィンドウの実装
 		$('img.centerbar')[0].addEventListener("dragstart",function(event){
 			var t = event.target.parentNode.parentNode;
 			var scrollxy = DocumentGetScrollPosition(document);
@@ -396,6 +439,32 @@ function preparation(){
 				//console.log('dragend'+t.style.top+'::'+t.style.left);
 			}
 			
+		}, false);
+		*/
+		
+		
+		$('img.centerbar')[0].addEventListener("dragstart",function(event){
+			centerbardragevent(event);
+			
+		}, false);
+		$('img.centerbar')[0].addEventListener("drag",function(event){
+			centerbardragevent(event);
+		}, false);
+		$('img.centerbar')[0].addEventListener("dragend",function(event){
+			centerbardragevent(event);
+		}, false);
+		$('img.centerbar')[0].addEventListener("touchstart",function(event){
+			event.preventDefault();
+			centerbardragevent(event);
+			
+		}, false);
+		$('img.centerbar')[0].addEventListener("touchmove",function(event){
+			event.preventDefault();
+			centerbardragevent(event);
+		}, false);
+		$('img.centerbar')[0].addEventListener("touchend",function(event){
+			event.preventDefault();
+			centerbardragevent(event);
 		}, false);
 		
 		//明度彩度指定ポインタのイベント

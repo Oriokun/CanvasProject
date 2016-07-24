@@ -1,9 +1,11 @@
 <?php 
 	const PASS_SIZE = 7;//パスデータの一塊のサイズ
 	//print_r($_POST["postdata0"]);
+	
+	
 	$order_no = "passdata";
 	//$filepass = "tmp/".$order_no.".txt";
-	$filepass = "/tmp/".$order_no.".txt";
+	$filepass = "./tmp/".$order_no.".txt";
 	
 	$file = fopen($filepass,"wb",true) or die('書き込みファイルを開けませんでした！');
 
